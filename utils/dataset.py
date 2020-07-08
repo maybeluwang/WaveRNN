@@ -14,39 +14,31 @@ from pathlib import Path
 # WaveRNN/Vocoder Dataset #########################################################
 ###################################################################################
 
-
 class VocoderDataset(Dataset):
-    def __init__(self, path: Path, dataset_ids, train_gta=False):
-        self.metadata = dataset_ids
+    def __init__(self, path: Path, train_gta=False):
+        with open(path/'dataset_ids.pkl', 'rb') as f:
+            self.metadata = pickle.load(f)
         self.mel_path = path/'gta' if train_gta else path/'mel'
         self.quant_path = path/'quant'
+        self.all_m = []
+        self.all_x = []
 
+        for item_id in self.metadata:
+            m = np.load(self.mel_path/f'{item_id}.npy')
+            x = np.load(self.quant_path/f'{item_id}.npy')
+            self.all_m.append(m)
+            self.all_x.append(x)
 
     def __getitem__(self, index):
-        item_id = self.metadata[index]
-        m = np.load(self.mel_path/f'{item_id}.npy')
-        x = np.load(self.quant_path/f'{item_id}.npy')
-        return m, x
+        return self.all_m[index], self.all_x[index]
 
     def __len__(self):
         return len(self.metadata)
 
 
 def get_vocoder_datasets(path: Path, batch_size, train_gta):
-
-    with open(path/'dataset.pkl', 'rb') as f:
-        dataset = pickle.load(f)
-
-    dataset_ids = [x[0] for x in dataset]
-
-    random.seed(1234)
-    random.shuffle(dataset_ids)
-
-    test_ids = dataset_ids[-hp.voc_test_samples:]
-    train_ids = dataset_ids[:-hp.voc_test_samples]
-
-    train_dataset = VocoderDataset(path, train_ids, train_gta)
-    test_dataset = VocoderDataset(path, test_ids, train_gta)
+    train_dataset = VocoderDataset(path/'train', train_gta)
+    test_dataset = VocoderDataset(path/'test', train_gta)
 
     train_set = DataLoader(train_dataset,
                            collate_fn=collate_vocoder,
