@@ -39,8 +39,7 @@ Download the [LJSpeech](https://keithito.com/LJ-Speech-Dataset/) Dataset.
 
 Edit **hparams.py**, point **wav_path** to your dataset and run:
 
-> python mypreprocess.py  --wav_dir DIR --output_dir DIR --train_list FILE --test_list FILE [--hp_file FILE]
-or use preprocess.py --path to point directly to the dataset
+> python mypreprocess.py  --wav_dir DIR --output_dir DIR --train_list FILE --test_list FILE
 ___
 
 Here's my recommendation on what order to run things:
